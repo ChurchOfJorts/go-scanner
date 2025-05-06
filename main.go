@@ -3,12 +3,13 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
 	"sort"
 )
 
-func scan(ports, results chan int) {
+func scan(ports, results chan int, target string) {
 	for p := range ports {
-		address := fmt.Sprintf("scanme.nmap.org:%d", p)
+		address := fmt.Sprintf("%s:%d", target, p) //scanme.nmap.org
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
 			results <- 0
@@ -20,12 +21,13 @@ func scan(ports, results chan int) {
 }
 
 func main() {
+	rhost := os.Args[1]
 	ports := make(chan int, 100) //Initialize a channel for 100 ports
 	results := make(chan int)    //Make a channel to store the results
 	var openports []int
 
 	for i := 0; i < cap(ports); i++ {
-		go scan(ports, results) //Scan the port, and save the output to results
+		go scan(ports, results, rhost) //Scan the port, and save the output to results
 	}
 
 	go func() {
